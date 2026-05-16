@@ -400,6 +400,99 @@ body.is-birthday #countdown .cd-title{display:none}
 @keyframes orbFloat1{0%,100%{transform:translate(0,0)}33%{transform:translate(100px,80px)}66%{transform:translate(-60px,120px)}}
 @keyframes orbFloat2{0%,100%{transform:translate(0,0)}33%{transform:translate(-80px,-100px)}66%{transform:translate(50px,-60px)}}
 @keyframes orbFloat3{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-45%,-55%)}}
+
+/* ═══ MUSIC PLAYER ═══ */
+#music-btn{
+  position:fixed;bottom:32px;right:32px;z-index:9000;
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,var(--deep-rose),var(--rose),var(--gold));
+  border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 30px rgba(212,84,122,0.5),0 8px 32px rgba(0,0,0,0.4);
+  transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.3s;
+  animation:musicPulse 2.5s ease-in-out infinite;
+}
+#music-btn:hover{
+  transform:scale(1.15);
+  box-shadow:0 0 50px rgba(212,84,122,0.7),0 8px 40px rgba(0,0,0,0.5);
+}
+#music-btn-icon{
+  font-size:22px;transition:all 0.4s;
+  filter:drop-shadow(0 0 6px rgba(255,255,255,0.6));
+}
+#music-btn.playing #music-btn-icon{
+  animation:noteFloat 1.8s ease-in-out infinite;
+}
+@keyframes noteFloat{
+  0%,100%{transform:rotate(-10deg) scale(1)}
+  50%{transform:rotate(10deg) scale(1.15)}
+}
+@keyframes musicPulse{
+  0%,100%{box-shadow:0 0 30px rgba(212,84,122,0.5),0 8px 32px rgba(0,0,0,0.4)}
+  50%{box-shadow:0 0 55px rgba(212,84,122,0.85),0 8px 40px rgba(0,0,0,0.5)}
+}
+
+/* Ripple rings */
+.music-ring{
+  position:absolute;width:100%;height:100%;border-radius:50%;
+  border:2px solid rgba(212,84,122,0.55);
+  animation:musicRing 2s ease-out infinite;
+  opacity:0;pointer-events:none;
+}
+.music-ring:nth-child(2){animation-delay:0.6s}
+.music-ring:nth-child(3){animation-delay:1.2s}
+@keyframes musicRing{
+  0%{transform:scale(1);opacity:0.7}
+  100%{transform:scale(2.5);opacity:0}
+}
+#music-btn:not(.playing) .music-ring{animation:none;opacity:0}
+
+/* Floating note burst */
+.music-note-burst{
+  position:fixed;pointer-events:none;z-index:8999;
+  font-size:1.4rem;animation:noteBurst 2.4s ease-out forwards;
+}
+@keyframes noteBurst{
+  0%{opacity:1;transform:translate(0,0) rotate(0deg) scale(0.6)}
+  60%{opacity:0.9;transform:translate(var(--tx),var(--ty)) rotate(var(--rot)) scale(1.1)}
+  100%{opacity:0;transform:translate(calc(var(--tx)*1.6),calc(var(--ty)*1.6)) rotate(calc(var(--rot)*1.5)) scale(0.5)}
+}
+
+/* Toast */
+#music-toast{
+  position:fixed;bottom:104px;right:32px;z-index:8998;
+  background:linear-gradient(135deg,rgba(155,43,80,0.92),rgba(61,12,31,0.92));
+  border:1px solid rgba(212,84,122,0.4);
+  color:#fff;padding:12px 20px;border-radius:40px;
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.05rem;
+  backdrop-filter:blur(16px);
+  box-shadow:0 8px 32px rgba(0,0,0,0.4),0 0 20px rgba(212,84,122,0.2);
+  opacity:0;transform:translateY(12px) scale(0.92);
+  transition:opacity 0.5s ease,transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  pointer-events:none;white-space:nowrap;
+}
+#music-toast.show{opacity:1;transform:translateY(0) scale(1)}
+
+/* Volume bar */
+#music-vol-wrap{
+  position:fixed;bottom:32px;right:104px;z-index:8997;
+  display:flex;align-items:center;gap:10px;
+  background:rgba(13,3,8,0.75);border:1px solid rgba(212,84,122,0.25);
+  border-radius:30px;padding:10px 18px;backdrop-filter:blur(16px);
+  opacity:0;transform:translateX(20px);
+  transition:opacity 0.4s,transform 0.4s;pointer-events:none;
+}
+#music-vol-wrap.show{opacity:1;transform:translateX(0);pointer-events:all}
+#music-vol-wrap span{font-size:1rem}
+#vol-slider{
+  -webkit-appearance:none;appearance:none;
+  width:90px;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--rose) 70%,rgba(255,255,255,0.15) 70%);
+  outline:none;cursor:pointer;
+}
+#vol-slider::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--gold2);box-shadow:0 0 8px rgba(212,84,122,0.5);cursor:pointer;
+}
 </style>
 </head>
 <body>
@@ -424,6 +517,31 @@ body.is-birthday #countdown .cd-title{display:none}
     <button onclick="lbGo(-1)">← Prev</button>
     <button onclick="lbGo(1)">Next →</button>
   </div>
+</div>
+
+<!-- ═══ BACKGROUND MUSIC ═══ -->
+<audio id="bgMusic" loop preload="auto">
+  <!-- Upload music.mp3 to your repo root and it will play automatically -->
+  <source src="music.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Floating Music Button -->
+<div id="music-btn" onclick="toggleMusic()" title="Play / Pause music">
+  <div class="music-ring"></div>
+  <div class="music-ring"></div>
+  <div class="music-ring"></div>
+  <span id="music-btn-icon">🎵</span>
+</div>
+
+<!-- Toast -->
+<div id="music-toast">🎶 Our song is playing, my love ♡</div>
+
+<!-- Volume control (appears on hover/long-press) -->
+<div id="music-vol-wrap">
+  <span>🔈</span>
+  <input type="range" id="vol-slider" min="0" max="1" step="0.05" value="0.65"
+    oninput="setVol(this.value)" aria-label="Volume">
+  <span>🔊</span>
 </div>
 
 <!-- LOADER -->
@@ -812,6 +930,146 @@ document.getElementById('lb').addEventListener('touchend',e=>{
   const diff=touchStart-e.changedTouches[0].clientX;
   if(Math.abs(diff)>50)lbGo(diff>0?1:-1);
 });
+
+// ═══════════════════════════════
+// ═══ ROMANTIC MUSIC PLAYER ═══
+// ═══════════════════════════════
+(function(){
+  const music  = document.getElementById('bgMusic');
+  const btn    = document.getElementById('music-btn');
+  const icon   = document.getElementById('music-btn-icon');
+  const toast  = document.getElementById('music-toast');
+  const volWrap= document.getElementById('music-vol-wrap');
+  const volSlider = document.getElementById('vol-slider');
+  let playing  = false;
+  let volHideTimer;
+
+  music.volume = 0.65;
+
+  /* ── Fade helpers ── */
+  function fadeIn(target, duration){
+    let v = 0; music.volume = 0;
+    const step = target / (duration / 80);
+    const t = setInterval(()=>{
+      v = Math.min(v + step, target);
+      music.volume = v;
+      updateSliderTrack(v);
+      if(v >= target) clearInterval(t);
+    }, 80);
+  }
+  function fadeOut(duration, cb){
+    let v = music.volume;
+    const step = v / (duration / 80);
+    const t = setInterval(()=>{
+      v = Math.max(v - step, 0);
+      music.volume = v;
+      updateSliderTrack(v);
+      if(v <= 0){ clearInterval(t); music.pause(); if(cb) cb(); }
+    }, 80);
+  }
+
+  /* ── Volume slider track fill ── */
+  function updateSliderTrack(val){
+    const pct = (val * 100).toFixed(1);
+    volSlider.style.background =
+      `linear-gradient(90deg,var(--rose) ${pct}%,rgba(255,255,255,0.15) ${pct}%)`;
+    volSlider.value = val;
+  }
+
+  /* ── Toggle ── */
+  function toggleMusic(){
+    if(playing){
+      fadeOut(800, ()=>{
+        icon.textContent = '🔇';
+        btn.classList.remove('playing');
+      });
+      playing = false;
+    } else {
+      music.play().then(()=>{
+        fadeIn(parseFloat(volSlider.value) || 0.65, 1200);
+        icon.textContent = '🎵';
+        btn.classList.add('playing');
+        playing = true;
+        showToast();
+        burstNotes();
+      }).catch(()=>{});
+    }
+  }
+  window.toggleMusic = toggleMusic;
+
+  /* ── Auto-start on first interaction ── */
+  function tryAutoPlay(){
+    music.volume = 0;
+    music.play().then(()=>{
+      fadeIn(parseFloat(volSlider.value) || 0.65, 2000);
+      icon.textContent = '🎵';
+      btn.classList.add('playing');
+      playing = true;
+      setTimeout(showToast, 1000);
+      setTimeout(burstNotes, 1200);
+    }).catch(()=>{});
+    document.removeEventListener('click', tryAutoPlay);
+    document.removeEventListener('touchstart', tryAutoPlay);
+  }
+  document.addEventListener('click', tryAutoPlay, { once:true });
+  document.addEventListener('touchstart', tryAutoPlay, { once:true });
+
+  /* ── Toast ── */
+  function showToast(){
+    toast.classList.add('show');
+    setTimeout(()=>toast.classList.remove('show'), 4000);
+  }
+
+  /* ── Floating note burst ── */
+  const NOTES = ['🎵','🎶','♪','♫','💕','🌸'];
+  function burstNotes(){
+    const rect = btn.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top  + rect.height/2;
+    for(let i=0;i<8;i++){
+      const el = document.createElement('div');
+      el.className = 'music-note-burst';
+      el.textContent = NOTES[Math.floor(Math.random()*NOTES.length)];
+      const angle = (Math.PI*2/8)*i + Math.random()*0.4;
+      const dist  = 60 + Math.random()*60;
+      el.style.setProperty('--tx', Math.cos(angle)*dist+'px');
+      el.style.setProperty('--ty', Math.sin(angle)*dist+'px');
+      el.style.setProperty('--rot', (Math.random()*120-60)+'deg');
+      el.style.left = cx+'px';
+      el.style.top  = cy+'px';
+      el.style.animationDelay = (i*0.06)+'s';
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(), 2500);
+    }
+  }
+
+  /* ── Volume control reveal on hover / long-press ── */
+  btn.addEventListener('mouseenter', showVol);
+  btn.addEventListener('mouseleave', ()=>{ volHideTimer=setTimeout(hideVol,1400); });
+  volWrap.addEventListener('mouseenter', ()=>clearTimeout(volHideTimer));
+  volWrap.addEventListener('mouseleave', ()=>{ volHideTimer=setTimeout(hideVol,600); });
+
+  let pressTimer;
+  btn.addEventListener('touchstart', ()=>{ pressTimer=setTimeout(showVol, 500); });
+  btn.addEventListener('touchend',   ()=>clearTimeout(pressTimer));
+
+  function showVol(){ clearTimeout(volHideTimer); volWrap.classList.add('show'); }
+  function hideVol(){ volWrap.classList.remove('show'); }
+
+  /* ── Volume setter ── */
+  window.setVol = function(v){
+    v = parseFloat(v);
+    music.volume = v;
+    updateSliderTrack(v);
+    if(v===0){ icon.textContent='🔇'; }
+    else if(playing){ icon.textContent='🎵'; }
+  };
+
+  /* ── Keyboard shortcut: M = mute/play ── */
+  document.addEventListener('keydown', e=>{
+    if(e.key==='m'||e.key==='M') toggleMusic();
+  });
+})();
 </script>
 </body>
 </html>
