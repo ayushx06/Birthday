@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Happy Birthday Prakriti 🌸</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Montserrat:wght@200;300;400&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --rose:#d4547a;--deep-rose:#9b2b50;--blush:#f7d6df;--cream:#fdf8f3;
+  --gold:#c9a84c;--gold2:#e8c96b;--deep:#3d0c1f;--soft:#f0b8c8;
+  --dark:#1a0510;
+}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{background:#0d0308;color:#fff;font-family:'Montserrat',sans-serif;overflow-x:hidden;cursor:none}
+
+/* CUSTOM CURSOR */
+#cursor{position:fixed;width:12px;height:12px;background:var(--rose);border-radius:50%;pointer-events:none;z-index:99999;transform:translate(-50%,-50%);transition:transform 0.1s,width 0.3s,height 0.3s,background 0.3s;mix-blend-mode:screen}
+#cursor-ring{position:fixed;width:36px;height:36px;border:1.5px solid rgba(212,84,122,0.6);border-radius:50%;pointer-events:none;z-index:99998;transform:translate(-50%,-50%);transition:transform 0.15s ease-out,width 0.3s,height 0.3s}
+
+/* CANVAS */
+#canvas{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+
+/* LOADING SCREEN */
+#loader{
+  position:fixed;inset:0;background:#0d0308;z-index:99990;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 1.2s ease, visibility 1.2s ease;
+}
+#loader.hidden{opacity:0;visibility:hidden}
+.loader-name{
+  font-family:'Playfair Display',serif;font-size:clamp(2.5rem,8vw,6rem);
+  font-style:italic;color:#fff;
+  background:linear-gradient(135deg,#fff,var(--gold2),var(--rose),#fff);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  background-size:300%;animation:shimmer 3s linear infinite;
+  letter-spacing:0.05em;
+}
+@keyframes shimmer{0%{background-position:0%}100%{background-position:300%}}
+.loader-bar{width:200px;height:2px;background:rgba(255,255,255,0.1);border-radius:2px;margin-top:30px;overflow:hidden}
+.loader-fill{height:100%;background:linear-gradient(90deg,var(--rose),var(--gold2));border-radius:2px;width:0;transition:width 2s ease}
+.loader-text{font-size:0.7rem;letter-spacing:0.4em;color:rgba(255,255,255,0.4);margin-top:16px;text-transform:uppercase}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  padding:20px 40px;display:flex;justify-content:space-between;align-items:center;
+  background:linear-gradient(to bottom,rgba(13,3,8,0.9),transparent);
+  transition:background 0.4s;
+}
+nav.scrolled{background:rgba(13,3,8,0.95);backdrop-filter:blur(20px)}
+.nav-logo{font-family:'Playfair Display',serif;font-style:italic;font-size:1.3rem;
+  background:linear-gradient(135deg,var(--rose),var(--gold2));-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text}
+.nav-links{display:flex;gap:30px}
+.nav-links a{color:rgba(255,255,255,0.6);text-decoration:none;font-size:0.72rem;
+  letter-spacing:0.2em;text-transform:uppercase;transition:color 0.3s}
+.nav-links a:hover{color:#fff}
+
+/* HERO */
+#hero{
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;text-align:center;position:relative;z-index:1;
+  padding:100px 20px 60px;
+}
+.hero-eyebrow{
+  font-size:0.7rem;letter-spacing:0.6em;text-transform:uppercase;
+  color:var(--gold2);margin-bottom:30px;opacity:0;
+  animation:fadeUp 1s 2.5s forwards;
+}
+.hero-name{
+  font-family:'Playfair Display',serif;font-size:clamp(3.5rem,12vw,10rem);
+  font-weight:900;font-style:italic;line-height:0.9;
+  background:linear-gradient(135deg,#fff 0%,var(--gold2) 30%,var(--rose) 60%,#fff 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  background-size:200%;animation:fadeUp 1s 2.7s forwards, nameShimmer 4s 4s linear infinite;
+  opacity:0;
+}
+@keyframes nameShimmer{0%{background-position:0%}100%{background-position:200%}}
+.hero-tagline{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:clamp(1rem,3vw,1.8rem);color:rgba(255,255,255,0.7);
+  margin-top:20px;opacity:0;animation:fadeUp 1s 3s forwards;
+}
+.hero-date{
+  font-size:0.65rem;letter-spacing:0.5em;text-transform:uppercase;
+  color:var(--rose);margin-top:16px;opacity:0;animation:fadeUp 1s 3.2s forwards;
+}
+.hero-scroll{
+  margin-top:60px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  opacity:0;animation:fadeUp 1s 3.8s forwards;
+}
+.scroll-line{width:1px;height:60px;background:linear-gradient(to bottom,var(--rose),transparent);animation:scrollPulse 2s ease-in-out infinite}
+@keyframes scrollPulse{0%,100%{height:30px;opacity:0.4}50%{height:60px;opacity:1}}
+.scroll-txt{font-size:0.6rem;letter-spacing:0.4em;color:rgba(255,255,255,0.3);text-transform:uppercase}
+
+/* FLOATING PHOTO CIRCLE ON HERO */
+.hero-portrait{
+  width:clamp(180px,35vw,320px);height:clamp(180px,35vw,320px);
+  border-radius:50%;overflow:hidden;margin:40px auto;
+  border:3px solid transparent;
+  background:linear-gradient(#0d0308,#0d0308) padding-box,
+             linear-gradient(135deg,var(--rose),var(--gold2),var(--rose)) border-box;
+  box-shadow:0 0 60px rgba(212,84,122,0.4),0 0 120px rgba(212,84,122,0.15);
+  opacity:0;animation:fadeUp 1.2s 2.8s forwards, float 6s 4s ease-in-out infinite;
+  position:relative;z-index:2;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-18px)}}
+.hero-portrait img{width:100%;height:100%;object-fit:cover;object-position:top center}
+
+/* COUNTDOWN */
+#countdown{
+  position:relative;z-index:2;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;padding:80px 20px;text-align:center;
+}
+.cd-title{
+  font-family:'Playfair Display',serif;font-size:clamp(1.2rem,4vw,2.5rem);
+  font-style:italic;color:rgba(255,255,255,0.85);margin-bottom:16px;
+}
+.cd-sub{font-size:0.65rem;letter-spacing:0.5em;color:var(--gold2);text-transform:uppercase;margin-bottom:60px}
+.cd-boxes{display:flex;gap:clamp(10px,3vw,40px);justify-content:center;flex-wrap:wrap}
+.cd-box{
+  display:flex;flex-direction:column;align-items:center;
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(212,84,122,0.25);
+  border-radius:20px;padding:clamp(20px,4vw,40px) clamp(18px,4vw,50px);
+  backdrop-filter:blur(10px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 20px 60px rgba(0,0,0,0.4);
+  transition:transform 0.3s,box-shadow 0.3s;
+}
+.cd-box:hover{transform:translateY(-8px);box-shadow:0 0 40px rgba(212,84,122,0.3),0 30px 80px rgba(0,0,0,0.5)}
+.cd-num{
+  font-family:'Playfair Display',serif;font-size:clamp(3rem,10vw,7rem);font-weight:700;
+  background:linear-gradient(135deg,#fff,var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  line-height:1;min-width:2ch;text-align:center;
+}
+.cd-unit{font-size:0.6rem;letter-spacing:0.4em;color:rgba(255,255,255,0.4);text-transform:uppercase;margin-top:12px}
+.cd-birthday-reveal{
+  display:none;text-align:center;
+}
+.cd-birthday-reveal h2{
+  font-family:'Playfair Display',serif;font-size:clamp(2rem,8vw,5rem);
+  font-style:italic;
+  background:linear-gradient(135deg,var(--gold2),var(--rose),#fff,var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  background-size:300%;animation:shimmer 2s linear infinite;
+}
+
+/* GALLERY */
+#gallery{position:relative;z-index:2;padding:100px 20px}
+.section-header{text-align:center;margin-bottom:70px}
+.section-eyebrow{font-size:0.65rem;letter-spacing:0.6em;text-transform:uppercase;color:var(--gold2);margin-bottom:16px}
+.section-title{
+  font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,4.5rem);
+  font-style:italic;
+  background:linear-gradient(135deg,#fff,rgba(255,255,255,0.7));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.gold-line{
+  width:80px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold2),transparent);
+  margin:24px auto 0;
+}
+
+/* HORIZONTAL SCROLL GALLERY */
+.gallery-track-wrap{overflow:hidden;position:relative}
+.gallery-track{
+  display:flex;gap:20px;
+  animation:galleryScroll 30s linear infinite;
+  width:max-content;
+}
+.gallery-track:hover{animation-play-state:paused}
+@keyframes galleryScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.gallery-card{
+  flex:0 0 280px;height:380px;border-radius:20px;overflow:hidden;
+  position:relative;cursor:pointer;
+  border:1px solid rgba(255,255,255,0.08);
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),box-shadow 0.4s;
+}
+.gallery-card:hover{transform:scale(1.05) translateY(-10px);box-shadow:0 30px 80px rgba(212,84,122,0.3)}
+.gallery-card img{width:100%;height:100%;object-fit:cover;transition:transform 0.6s}
+.gallery-card:hover img{transform:scale(1.1)}
+.gallery-card-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(13,3,8,0.9) 0%,transparent 50%);
+  display:flex;align-items:flex-end;padding:20px;opacity:0;transition:opacity 0.4s;
+}
+.gallery-card:hover .gallery-card-overlay{opacity:1}
+.gallery-card-caption{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1rem;
+  color:rgba(255,255,255,0.9);
+}
+
+/* FULLSCREEN GRID */
+.gallery-grid-section{
+  max-width:1200px;margin:60px auto 0;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+}
+@media(max-width:700px){.gallery-grid-section{grid-template-columns:repeat(2,1fr)}}
+.grid-photo{
+  border-radius:16px;overflow:hidden;position:relative;cursor:pointer;
+  aspect-ratio:3/4;
+  border:1px solid rgba(255,255,255,0.06);
+  transition:transform 0.4s,box-shadow 0.4s;
+}
+.grid-photo:hover{transform:scale(1.03);box-shadow:0 20px 60px rgba(212,84,122,0.25)}
+.grid-photo img{width:100%;height:100%;object-fit:cover;object-position:top;display:block}
+.grid-photo-label{
+  position:absolute;bottom:0;left:0;right:0;
+  background:linear-gradient(to top,rgba(13,3,8,0.95),transparent);
+  padding:30px 16px 14px;
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.95rem;
+  color:rgba(255,255,255,0.85);transform:translateY(100%);transition:transform 0.4s;
+}
+.grid-photo:hover .grid-photo-label{transform:translateY(0)}
+
+/* LETTER */
+#letter{position:relative;z-index:2;padding:120px 20px;overflow:hidden}
+#letter::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 50%,rgba(212,84,122,0.08),transparent 70%);
+  pointer-events:none;
+}
+.letter-container{
+  max-width:800px;margin:0 auto;position:relative;
+}
+.letter-paper{
+  background:linear-gradient(145deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:24px;padding:clamp(40px,7vw,80px);
+  backdrop-filter:blur(20px);
+  box-shadow:0 40px 120px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.letter-quote{
+  font-size:6rem;font-family:'Playfair Display',serif;line-height:0.6;
+  color:var(--rose);opacity:0.4;margin-bottom:-10px;display:block;
+}
+.letter-salutation{
+  font-family:'Cormorant Garamond',serif;font-style:italic;
+  font-size:1.3rem;color:var(--gold2);margin-bottom:30px;
+}
+.letter-body{
+  font-family:'Cormorant Garamond',serif;font-size:clamp(1.1rem,2.5vw,1.35rem);
+  line-height:2;color:rgba(255,255,255,0.85);
+}
+.letter-body p{margin-bottom:28px}
+.letter-body em{color:var(--gold2);font-style:italic}
+.letter-sig{
+  font-family:'Playfair Display',serif;font-style:italic;font-size:1.8rem;
+  background:linear-gradient(135deg,var(--rose),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-align:right;margin-top:40px;
+}
+.letter-hearts{
+  display:flex;justify-content:center;gap:8px;margin-top:30px;
+  font-size:1.2rem;
+}
+.letter-hearts span{animation:heartPop 1.5s ease-in-out infinite}
+.letter-hearts span:nth-child(2){animation-delay:0.15s}
+.letter-hearts span:nth-child(3){animation-delay:0.3s}
+@keyframes heartPop{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+
+/* WISHES */
+#wishes{position:relative;z-index:2;padding:100px 20px}
+.wishes-grid{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;
+}
+.wish{
+  border:1px solid rgba(255,255,255,0.07);border-radius:20px;
+  padding:34px 28px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.04),rgba(212,84,122,0.04));
+  backdrop-filter:blur(10px);
+  transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1),border-color 0.4s,box-shadow 0.4s;
+  position:relative;overflow:hidden;
+}
+.wish::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--rose),var(--gold2));
+  opacity:0;transition:opacity 0.4s;border-radius:inherit;
+}
+.wish:hover{transform:translateY(-10px) scale(1.02);border-color:rgba(212,84,122,0.5);
+  box-shadow:0 20px 60px rgba(212,84,122,0.2)}
+.wish:hover::before{opacity:0.05}
+.wish-icon{font-size:2.5rem;margin-bottom:18px;display:block}
+.wish-text{
+  font-family:'Cormorant Garamond',serif;font-size:1.15rem;
+  line-height:1.8;color:rgba(255,255,255,0.8);position:relative;z-index:1;
+}
+
+/* COUPLE SECTION */
+#couple-section{position:relative;z-index:2;padding:120px 20px;text-align:center}
+.couple-frame{
+  max-width:500px;margin:50px auto;
+  border-radius:24px;overflow:hidden;
+  border:2px solid rgba(212,84,122,0.3);
+  box-shadow:0 0 80px rgba(212,84,122,0.25),0 0 200px rgba(212,84,122,0.1);
+  position:relative;
+}
+.couple-frame img{width:100%;display:block;object-fit:cover}
+.couple-frame::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(13,3,8,0.7),transparent 50%);
+}
+.couple-tag{
+  position:absolute;bottom:0;left:0;right:0;z-index:2;
+  padding:30px;text-align:center;
+  font-family:'Playfair Display',serif;font-style:italic;
+  font-size:1.4rem;color:#fff;
+}
+
+/* TIMELINE */
+#timeline{position:relative;z-index:2;padding:100px 20px}
+.timeline-line{
+  width:1px;height:0;background:linear-gradient(to bottom,var(--rose),var(--gold2),var(--rose));
+  margin:0 auto;transition:height 1.5s ease;position:relative;
+}
+.timeline-line.grown{height:400px}
+.tl-dots{max-width:600px;margin:0 auto;position:relative;padding:40px 0}
+.tl-item{display:flex;align-items:center;gap:24px;margin-bottom:40px;opacity:0;transform:translateX(-30px);transition:all 0.8s ease}
+.tl-item.right{flex-direction:row-reverse;transform:translateX(30px)}
+.tl-item.visible{opacity:1;transform:translateX(0)}
+.tl-dot{width:14px;height:14px;border-radius:50%;background:var(--rose);flex-shrink:0;
+  box-shadow:0 0 20px rgba(212,84,122,0.6)}
+.tl-content{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:20px 24px;flex:1;
+}
+.tl-label{font-size:0.6rem;letter-spacing:0.3em;color:var(--gold2);text-transform:uppercase;margin-bottom:8px}
+.tl-text{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.1rem;color:rgba(255,255,255,0.85)}
+
+/* FOOTER */
+footer{
+  position:relative;z-index:2;text-align:center;
+  padding:80px 20px;
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.footer-name{
+  font-family:'Playfair Display',serif;font-size:clamp(2rem,6vw,4rem);
+  font-style:italic;
+  background:linear-gradient(135deg,var(--rose),var(--gold2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:16px;
+}
+.footer-sub{font-size:0.65rem;letter-spacing:0.5em;color:rgba(255,255,255,0.3);text-transform:uppercase}
+.footer-heart{
+  font-size:2.5rem;display:block;margin:30px auto;
+  animation:heartbeat 1.2s ease-in-out infinite;
+}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.4)}28%{transform:scale(1.1)}42%{transform:scale(1.35)}70%{transform:scale(1)}}
+
+/* LIGHTBOX */
+#lb{
+  position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9999;
+  display:none;align-items:center;justify-content:center;flex-direction:column;
+  backdrop-filter:blur(10px);
+}
+#lb.open{display:flex}
+#lb-img{max-width:90vw;max-height:80vh;border-radius:16px;
+  border:1px solid rgba(212,84,122,0.4);object-fit:contain}
+#lb-close{
+  position:absolute;top:24px;right:30px;font-size:2rem;color:rgba(255,255,255,0.6);
+  cursor:pointer;transition:color 0.3s;background:none;border:none;
+}
+#lb-close:hover{color:#fff}
+#lb-nav{display:flex;gap:16px;margin-top:20px}
+#lb-nav button{
+  background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);
+  color:#fff;padding:10px 28px;border-radius:30px;cursor:pointer;
+  font-family:'Cormorant Garamond',serif;font-size:1.1rem;transition:background 0.3s;
+}
+#lb-nav button:hover{background:rgba(212,84,122,0.3)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(50px);transition:opacity 0.9s ease,transform 0.9s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* BIRTHDAY MODE */
+body.is-birthday #countdown .cd-boxes{display:none}
+body.is-birthday #countdown .cd-birthday-reveal{display:block}
+body.is-birthday #countdown .cd-sub{display:none}
+body.is-birthday #countdown .cd-title{display:none}
+
+/* MOBILE */
+@media(max-width:600px){
+  nav{padding:16px 20px}.nav-links{gap:16px}
+  .nav-links a{font-size:0.6rem;letter-spacing:0.1em}
+  .gallery-grid-section{grid-template-columns:1fr 1fr}
+}
+
+/* GLOW ORBS */
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;opacity:0.12}
+.orb1{width:600px;height:600px;background:radial-gradient(var(--rose),transparent);top:-200px;left:-200px;animation:orbFloat1 20s ease-in-out infinite}
+.orb2{width:500px;height:500px;background:radial-gradient(var(--gold),transparent);bottom:-150px;right:-150px;animation:orbFloat2 25s ease-in-out infinite}
+.orb3{width:400px;height:400px;background:radial-gradient(#7b2d7b,transparent);top:50%;left:50%;transform:translate(-50%,-50%);animation:orbFloat3 18s ease-in-out infinite}
+@keyframes orbFloat1{0%,100%{transform:translate(0,0)}33%{transform:translate(100px,80px)}66%{transform:translate(-60px,120px)}}
+@keyframes orbFloat2{0%,100%{transform:translate(0,0)}33%{transform:translate(-80px,-100px)}66%{transform:translate(50px,-60px)}}
+@keyframes orbFloat3{0%,100%{transform:translate(-50%,-50%)}50%{transform:translate(-45%,-55%)}}
+</style>
+</head>
+<body>
+
+<!-- GLOW ORBS -->
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- CUSTOM CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- PARTICLE CANVAS -->
+<canvas id="canvas"></canvas>
+
+<!-- LIGHTBOX -->
+<div id="lb">
+  <button id="lb-close">✕</button>
+  <img id="lb-img" src="" alt="Prakriti"/>
+  <div id="lb-nav">
+    <button onclick="lbGo(-1)">← Prev</button>
+    <button onclick="lbGo(1)">Next →</button>
+  </div>
+</div>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-name">Prakriti</div>
+  <div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div>
+  <div class="loader-text">Loading something beautiful…</div>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-logo">Happy Birthday 🌸</div>
+  <div class="nav-links">
+    <a href="#countdown">Countdown</a>
+    <a href="#gallery">Gallery</a>
+    <a href="#letter">Letter</a>
+    <a href="#couple-section">Us</a>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section id="hero">
+  <p class="hero-eyebrow">✦ A gift from across the miles ✦</p>
+  <div class="hero-portrait">
+    <img src="images/p4.jpg" alt="Prakriti"/>
+  </div>
+  <h1 class="hero-name">Prakriti</h1>
+  <p class="hero-tagline">The girl who makes every distance feel small</p>
+  <p class="hero-date">Asar 12 &nbsp;·&nbsp; 2064 BS &nbsp;·&nbsp; Born to be loved</p>
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    <span class="scroll-txt">Scroll down</span>
+  </div>
+</section>
+
+<!-- ═══════════ COUNTDOWN ═══════════ -->
+<section id="countdown">
+  <p class="cd-sub reveal">⏳ Counting every second until your day</p>
+  <h2 class="cd-title reveal" style="font-family:'Playfair Display',serif;font-style:italic">Until Your Birthday</h2>
+  <div class="cd-boxes reveal" style="margin-top:50px">
+    <div class="cd-box"><div class="cd-num" id="cd-d">40</div><div class="cd-unit">Days</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-h">00</div><div class="cd-unit">Hours</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-m">00</div><div class="cd-unit">Minutes</div></div>
+    <div class="cd-box"><div class="cd-num" id="cd-s">00</div><div class="cd-unit">Seconds</div></div>
+  </div>
+  <div class="cd-birthday-reveal reveal">
+    <h2>🎉 Happy Birthday, Prakriti! 🎉</h2>
+    <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.4rem;color:rgba(255,255,255,0.7);margin-top:20px">
+      Today is the day the world became more beautiful 🌸
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════ GALLERY ═══════════ -->
+<section id="gallery">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">✦ Memories ✦</p>
+    <h2 class="section-title">Her Beautiful World</h2>
+    <div class="gold-line"></div>
+  </div>
+
+  <!-- Infinite scroll strip -->
+  <div class="gallery-track-wrap">
+    <div class="gallery-track">
+      <!-- First set -->
+      <div class="gallery-card" onclick="openLb(0)"><img src="images/p2.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Among the mountains 🏔️</span></div></div>
+      <div class="gallery-card" onclick="openLb(1)"><img src="images/p3.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Grace & sindoor ✨</span></div></div>
+      <div class="gallery-card" onclick="openLb(2)"><img src="images/p4.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">A floral dream 🌸</span></div></div>
+      <div class="gallery-card" onclick="openLb(3)"><img src="images/p5.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Soft pink beauty 💕</span></div></div>
+      <div class="gallery-card" onclick="openLb(4)"><img src="images/p6.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Nepal's finest 🌺</span></div></div>
+      <div class="gallery-card" onclick="openLb(5)"><img src="images/p7.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Dancing silk 🎶</span></div></div>
+      <!-- Duplicate for infinite effect -->
+      <div class="gallery-card" onclick="openLb(0)"><img src="images/p2.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Among the mountains 🏔️</span></div></div>
+      <div class="gallery-card" onclick="openLb(1)"><img src="images/p3.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Grace & sindoor ✨</span></div></div>
+      <div class="gallery-card" onclick="openLb(2)"><img src="images/p4.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">A floral dream 🌸</span></div></div>
+      <div class="gallery-card" onclick="openLb(3)"><img src="images/p5.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Soft pink beauty 💕</span></div></div>
+      <div class="gallery-card" onclick="openLb(4)"><img src="images/p6.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Nepal's finest 🌺</span></div></div>
+      <div class="gallery-card" onclick="openLb(5)"><img src="images/p7.jpg" alt="Prakriti"/><div class="gallery-card-overlay"><span class="gallery-card-caption">Dancing silk 🎶</span></div></div>
+    </div>
+  </div>
+
+  <!-- Static grid -->
+  <div class="gallery-grid-section">
+    <div class="grid-photo reveal" onclick="openLb(0)">
+      <img src="images/p2.jpg" alt="Prakriti — mountains"/>
+      <div class="grid-photo-label">Her & the mountains 🏔️</div>
+    </div>
+    <div class="grid-photo reveal" onclick="openLb(1)">
+      <img src="images/p3.jpg" alt="Prakriti — Nepal village"/>
+      <div class="grid-photo-label">Nepal's most beautiful ✨</div>
+    </div>
+    <div class="grid-photo reveal" onclick="openLb(2)">
+      <img src="images/p4.jpg" alt="Prakriti — floral saree"/>
+      <div class="grid-photo-label">Blooming like spring 🌸</div>
+    </div>
+    <div class="grid-photo reveal" onclick="openLb(3)">
+      <img src="images/p5.jpg" alt="Prakriti — pink kurti"/>
+      <div class="grid-photo-label">Quiet elegance 💕</div>
+    </div>
+    <div class="grid-photo reveal" onclick="openLb(4)">
+      <img src="images/p6.jpg" alt="Prakriti — terrace"/>
+      <div class="grid-photo-label">Her smile, my whole world 💖</div>
+    </div>
+    <div class="grid-photo reveal" onclick="openLb(5)">
+      <img src="images/p7.jpg" alt="Prakriti — event"/>
+      <div class="grid-photo-label">Grace personified 🌺</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ COUPLE ═══════════ -->
+<section id="couple-section">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">✦ Us ✦</p>
+    <h2 class="section-title">You & Me</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="couple-frame reveal">
+    <img src="images/couple.jpg" alt="Prakriti and I"/>
+    <div class="couple-tag">From college corridors to forever 💕</div>
+  </div>
+  <p class="reveal" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1.3rem;color:rgba(255,255,255,0.6);max-width:500px;margin:0 auto;line-height:1.8">
+    She was my junior. She didn't know then that she would become my entire world.
+  </p>
+</section>
+
+<!-- ═══════════ LOVE LETTER ═══════════ -->
+<section id="letter">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">✦ From My Heart ✦</p>
+    <h2 class="section-title">A Letter For You</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="letter-container">
+    <div class="letter-paper reveal">
+      <span class="letter-quote">"</span>
+      <p class="letter-salutation">My dearest Prakriti,</p>
+      <div class="letter-body">
+        <p>There are some people who walk into your life quietly and rearrange everything — not with noise, but with warmth. You were that person for me. I still remember the first time I saw you at college, my junior, carrying yourself with that quiet confidence and a smile that could make the whole world pause. I didn't know then that you would become the most important person in my universe.</p>
+        <p>Across every kilometre that now separates us — from the hills of Nepal to the shores of New Zealand — I carry you with me. In every morning when the light is soft. In every evening when I miss you most. In every beautiful thing I see, I think: <em>she would love this.</em> You have a way of making the world feel more alive simply by existing in it.</p>
+        <p>You were born on Asar 12 — the monsoon month, when Nepal turns impossibly green and the rivers run full. It feels so right. That you came into this world when everything was blooming. Because <em>that is what you do</em> — you make things bloom. You make people around you feel more alive.</p>
+        <p>I love the way you carry your culture with grace. Your sindoor, your sarees, the mountains behind you in every photo as though Nepal itself is proud to be your backdrop. I love your gentleness and your strength. I love that you are both soft and utterly unshakeable.</p>
+        <p>This birthday, I cannot hold your hand or watch your face light up in person — and that distance is a quiet ache I carry every single day. But know this: every thought I send across the sky, every wish I make tonight, every day I work toward a future where the miles between us disappear — <em>all of it is for you.</em></p>
+        <p>So on this day, from 7,000 kilometres away, with every piece of my heart — <em>Happy Birthday, Prakriti.</em> You deserve all the roses, all the light, all the joy this world holds. I love you endlessly, completely, and always.</p>
+      </div>
+      <p class="letter-sig">— Yours, always 💕</p>
+      <div class="letter-hearts">
+        <span>💕</span><span>🌸</span><span>💕</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ OUR TIMELINE ═══════════ -->
+<section id="timeline">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">✦ Our Story ✦</p>
+    <h2 class="section-title">How We Got Here</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="tl-dots">
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-content"><div class="tl-label">The Beginning</div><div class="tl-text">A junior at college catches my eye. She doesn't know yet.</div></div></div>
+    <div class="tl-item right"><div class="tl-dot"></div><div class="tl-content"><div class="tl-label">First Conversations</div><div class="tl-text">Words become the bridge between two hearts finding their way.</div></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-content"><div class="tl-label">We Fall</div><div class="tl-text">It happens slowly, then all at once — the way it always does.</div></div></div>
+    <div class="tl-item right"><div class="tl-dot"></div><div class="tl-content"><div class="tl-label">The Distance</div><div class="tl-text">New Zealand. Nepal. 7,000 km. But love has no borders.</div></div></div>
+    <div class="tl-item"><div class="tl-dot"></div><div class="tl-content"><div class="tl-label">Right Now</div><div class="tl-text">Celebrating your birthday across oceans, with my whole heart. 🌸</div></div></div>
+  </div>
+</section>
+
+<!-- ═══════════ WISHES ═══════════ -->
+<section id="wishes">
+  <div class="section-header reveal">
+    <p class="section-eyebrow">✦ Birthday Wishes ✦</p>
+    <h2 class="section-title">Everything I Wish For You</h2>
+    <div class="gold-line"></div>
+  </div>
+  <div class="wishes-grid">
+    <div class="wish reveal"><span class="wish-icon">🌸</span><p class="wish-text">May every single day of your new year bloom as beautifully as you do, every morning.</p></div>
+    <div class="wish reveal"><span class="wish-icon">💫</span><p class="wish-text">May your dreams be as boundless as the Himalayan sky you grew up beneath.</p></div>
+    <div class="wish reveal"><span class="wish-icon">🏔️</span><p class="wish-text">May you stand tall as Nepal's mountains — unshakeable, breathtaking, timeless.</p></div>
+    <div class="wish reveal"><span class="wish-icon">❤️</span><p class="wish-text">May this year bring us closer — in heart, in spirit, and in every way that matters.</p></div>
+    <div class="wish reveal"><span class="wish-icon">✨</span><p class="wish-text">May joy follow you the way sunshine follows a perfect morning — effortlessly, warmly.</p></div>
+    <div class="wish reveal"><span class="wish-icon">🌺</span><p class="wish-text">May you always know, in every quiet moment, just how deeply and completely you are loved.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <span class="footer-heart">💕</span>
+  <div class="footer-name">Happy Birthday, Prakriti</div>
+  <p class="footer-sub">Asar 12 · 2064 BS · Made with love from New Zealand to Nepal</p>
+  <p style="margin-top:20px;font-family:'Cormorant Garamond',serif;font-style:italic;font-size:1rem;color:rgba(255,255,255,0.3)">
+    No distance is too far when the love is this real 🌸
+  </p>
+</footer>
+
+<script>
+// ═══ CURSOR ═══
+const cursor=document.getElementById('cursor'),ring=document.getElementById('cursor-ring');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cursor.style.left=mx+'px';cursor.style.top=my+'px'});
+function animRing(){rx+=(mx-rx)*0.12;ry+=(my-ry)*0.12;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(animRing)}
+animRing();
+document.querySelectorAll('a,button,.gallery-card,.grid-photo,.wish,.cd-box').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{cursor.style.width='20px';cursor.style.height='20px';ring.style.width='52px';ring.style.height='52px'});
+  el.addEventListener('mouseleave',()=>{cursor.style.width='12px';cursor.style.height='12px';ring.style.width='36px';ring.style.height='36px'});
+});
+
+// ═══ LOADER ═══
+window.addEventListener('load',()=>{
+  const fill=document.getElementById('loader-fill');
+  fill.style.width='100%';
+  setTimeout(()=>{document.getElementById('loader').classList.add('hidden')},2200);
+});
+
+// ═══ CANVAS PARTICLES ═══
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;canvas.height=window.innerHeight;
+window.addEventListener('resize',()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight});
+
+const particles=[];
+const COLORS=['rgba(212,84,122,','rgba(201,168,76,','rgba(240,184,200,','rgba(255,255,255,'];
+
+class Particle{
+  constructor(){this.reset()}
+  reset(){
+    this.x=Math.random()*canvas.width;
+    this.y=Math.random()*canvas.height;
+    this.size=Math.random()*3+0.5;
+    this.speedY=-(Math.random()*0.6+0.2);
+    this.speedX=(Math.random()-0.5)*0.4;
+    this.alpha=Math.random()*0.5+0.1;
+    this.color=COLORS[Math.floor(Math.random()*COLORS.length)];
+    this.life=0;this.maxLife=Math.random()*200+100;
+    this.type=Math.random()>0.7?'heart':'circle';
+  }
+  draw(){
+    ctx.save();
+    ctx.globalAlpha=this.alpha*(1-this.life/this.maxLife);
+    if(this.type==='heart'){
+      ctx.fillStyle=this.color+'0.8)';
+      ctx.font=this.size*5+'px serif';
+      ctx.fillText('♥',this.x,this.y);
+    } else {
+      ctx.beginPath();
+      ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+      ctx.fillStyle=this.color+(0.3+Math.random()*0.3)+')';
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+  update(){
+    this.x+=this.speedX;this.y+=this.speedY;
+    this.life++;
+    if(this.life>=this.maxLife||this.y<-20)this.reset();
+  }
+}
+
+// Petal class
+class Petal{
+  constructor(){this.reset()}
+  reset(){
+    this.x=Math.random()*canvas.width;
+    this.y=-30;
+    this.size=Math.random()*12+6;
+    this.speedY=Math.random()*1.5+0.8;
+    this.speedX=(Math.random()-0.5)*1.5;
+    this.rotation=Math.random()*360;
+    this.rotSpeed=(Math.random()-0.5)*3;
+    this.alpha=Math.random()*0.5+0.3;
+    this.color=Math.random()>0.5?'#f9c5d5':'#f4a0b8';
+  }
+  draw(){
+    ctx.save();
+    ctx.globalAlpha=this.alpha;
+    ctx.translate(this.x,this.y);
+    ctx.rotate(this.rotation*Math.PI/180);
+    ctx.beginPath();
+    ctx.ellipse(0,0,this.size/2,this.size,0,0,Math.PI*2);
+    ctx.fillStyle=this.color;
+    ctx.fill();
+    ctx.restore();
+  }
+  update(){
+    this.x+=this.speedX;
+    this.y+=this.speedY;
+    this.rotation+=this.rotSpeed;
+    if(this.y>canvas.height+50)this.reset();
+  }
+}
+
+for(let i=0;i<80;i++)particles.push(new Particle());
+const petals=[];
+for(let i=0;i<30;i++){const p=new Petal();p.y=Math.random()*canvas.height;petals.push(p)}
+
+function animCanvas(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  petals.forEach(p=>{p.update();p.draw()});
+  particles.forEach(p=>{p.update();p.draw()});
+  requestAnimationFrame(animCanvas);
+}
+animCanvas();
+
+// ═══ COUNTDOWN ═══
+const bday=new Date('2026-06-26T00:00:00');
+function tick(){
+  const diff=bday-new Date();
+  if(diff<=0){document.body.classList.add('is-birthday');launchConfetti();return}
+  const d=Math.floor(diff/86400000);
+  const h=Math.floor((diff%86400000)/3600000);
+  const m=Math.floor((diff%3600000)/60000);
+  const s=Math.floor((diff%60000)/1000);
+  function set(id,v){
+    const el=document.getElementById(id);
+    const str=String(v).padStart(2,'0');
+    if(el.textContent!==str){el.style.transform='scale(0.8)';el.style.opacity='0.5';setTimeout(()=>{el.textContent=str;el.style.transform='scale(1)';el.style.opacity='1'},150)}
+  }
+  set('cd-d',d);set('cd-h',h);set('cd-m',m);set('cd-s',s);
+}
+document.querySelectorAll('.cd-num').forEach(el=>{el.style.transition='transform 0.15s,opacity 0.15s'});
+tick();setInterval(tick,1000);
+
+// ═══ CONFETTI ═══
+function launchConfetti(){
+  const colors=['#d4547a','#f9c5d5','#c9a84c','#fff','#e87099','#f0b8c8'];
+  for(let i=0;i<200;i++){
+    const c=document.createElement('div');
+    c.style.cssText=`position:fixed;top:-20px;left:${Math.random()*100}vw;
+      width:${Math.random()*10+5}px;height:${Math.random()*10+5}px;
+      background:${colors[~~(Math.random()*colors.length)]};
+      border-radius:${Math.random()>0.5?'50%':'0'};pointer-events:none;
+      z-index:9990;animation:confettiFall ${Math.random()*4+3}s linear ${Math.random()*5}s infinite`;
+    document.body.appendChild(c);
+  }
+  const st=document.createElement('style');
+  st.textContent='@keyframes confettiFall{0%{transform:translateY(0) rotateZ(0);opacity:1}100%{transform:translateY(110vh) rotateZ(720deg);opacity:0}}';
+  document.head.appendChild(st);
+}
+
+// ═══ LIGHTBOX ═══
+const lbImgs=[
+  {src:'images/p2.jpg',cap:'Among the mountains 🏔️'},
+  {src:'images/p3.jpg',cap:'Nepal\'s most beautiful ✨'},
+  {src:'images/p4.jpg',cap:'A floral dream 🌸'},
+  {src:'images/p5.jpg',cap:'Soft pink beauty 💕'},
+  {src:'images/p6.jpg',cap:'Her smile, my world 💖'},
+  {src:'images/p7.jpg',cap:'Dancing silk 🎶'},
+];
+let lbIdx=0;
+function openLb(i){lbIdx=i;document.getElementById('lb-img').src=lbImgs[i].src;document.getElementById('lb').classList.add('open')}
+function lbGo(d){lbIdx=(lbIdx+d+lbImgs.length)%lbImgs.length;document.getElementById('lb-img').src=lbImgs[lbIdx].src}
+document.getElementById('lb-close').onclick=()=>document.getElementById('lb').classList.remove('open');
+document.getElementById('lb').addEventListener('click',e=>{if(e.target===document.getElementById('lb'))document.getElementById('lb').classList.remove('open')});
+
+// ═══ SCROLL REVEAL ═══
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach((e,i)=>{if(e.isIntersecting){setTimeout(()=>e.target.classList.add('visible'),i*80);obs.unobserve(e.target)}})
+},{threshold:0.1});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Timeline
+const tlObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');tlObs.unobserve(e.target)}})
+},{threshold:0.2});
+document.querySelectorAll('.tl-item').forEach((el,i)=>{setTimeout(()=>tlObs.observe(el),i*200)});
+
+// Nav scroll
+window.addEventListener('scroll',()=>{
+  document.getElementById('nav').classList.toggle('scrolled',window.scrollY>80)
+});
+
+// ═══ MOUSE PARALLAX on hero portrait ═══
+document.addEventListener('mousemove',e=>{
+  const portrait=document.querySelector('.hero-portrait');
+  if(!portrait)return;
+  const x=(e.clientX/window.innerWidth-0.5)*20;
+  const y=(e.clientY/window.innerHeight-0.5)*10;
+  portrait.style.transform=`translateY(${-18*Math.sin(Date.now()/1000/3)}px) rotateY(${x}deg) rotateX(${-y}deg)`;
+});
+
+// ═══ TOUCH: swipe on lightbox ═══
+let touchStart=0;
+document.getElementById('lb').addEventListener('touchstart',e=>touchStart=e.touches[0].clientX);
+document.getElementById('lb').addEventListener('touchend',e=>{
+  const diff=touchStart-e.changedTouches[0].clientX;
+  if(Math.abs(diff)>50)lbGo(diff>0?1:-1);
+});
+</script>
+</body>
+</html>
